@@ -1,0 +1,2 @@
+# service_architecture_hw9_manifest
+Домашнее задание Stream processing
