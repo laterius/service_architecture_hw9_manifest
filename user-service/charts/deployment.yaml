@@ -1,0 +1,42 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-service
+  namespace: otus-msa-hw9
+  labels:
+    app: user-service
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: user-service
+  template:
+    metadata:
+      labels:
+        app: user-service
+    spec:
+      containers:
+        - name: user-service
+          image: 34234247632/user-service:v1.1
+          imagePullPolicy: IfNotPresent
+          command: ["/app/service"]
+          ports:
+            - name: http
+              containerPort: 8000
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /probe/live
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /probe/ready
+              port: http
+          envFrom:
+            - configMapRef:
+                name: user-config
+            - secretRef:
+                name: user-secrets

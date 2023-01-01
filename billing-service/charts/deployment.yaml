@@ -1,0 +1,52 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: billing-service
+  namespace: otus-msa-hw9
+  labels:
+    app: billing-service
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: billing-service
+  template:
+    metadata:
+      labels:
+        app: billing-service
+    spec:
+      containers:
+        - name: billing-service
+          image: 34234247632/billing-service:v1.6
+          imagePullPolicy: IfNotPresent
+          command: ["/app/service"]
+          ports:
+            - name: http
+              containerPort: 8000
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /probe/live
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /probe/ready
+              port: http
+          envFrom:
+            - configMapRef:
+                name: billing-config
+            - secretRef:
+                name: billing-secrets
+      initContainers:
+        - name: migrate
+          image: 34234247632/billing-service:v1.6
+          imagePullPolicy: IfNotPresent
+          command: ["/entrypoint-migrate.sh"]
+          envFrom:
+            - configMapRef:
+                name: billing-config
+            - secretRef:
+                name: billing-secrets

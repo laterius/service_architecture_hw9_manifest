@@ -1,0 +1,74 @@
+version: '3'
+services:
+  app-order:
+    container_name: app-order
+    image: 34234247632/order-service:v3.3
+    networks:
+      - otus-msa-hw9
+    restart: always
+    entrypoint: /entrypoint.sh
+    ports:
+      - "8000:8000"
+    depends_on:
+      - "db"
+    environment:
+      DB_HOST: db
+      DB_PASSWORD: example
+  app-user:
+    container_name: app-user
+    image: 34234247632/user-service:v1.1
+    networks:
+      - otus-msa-hw9
+    restart: always
+    entrypoint: /entrypoint.sh
+    ports:
+      - "8001:8001"
+    depends_on:
+      - "app-order"
+    environment:
+      DB_HOST: db
+      DB_PASSWORD: example
+  app-billing:
+    container_name: app-billing
+    image: 34234247632/billing-service:v1.6
+    networks:
+      - otus-msa-hw9
+    restart: always
+    entrypoint: /entrypoint.sh
+    ports:
+      - "8002:8002"
+    depends_on:
+      - "app-user"
+    environment:
+      DB_HOST: db
+      DB_PASSWORD: example
+  app-notification:
+    container_name: app-notification
+    image: 34234247632/notification-service:v1.1
+    networks:
+      - otus-msa-hw9
+    restart: always
+    entrypoint: /entrypoint.sh
+    ports:
+      - "8003:8003"
+    depends_on:
+      - "app-billing"
+    environment:
+      DB_HOST: db
+      DB_PASSWORD: example
+  db:
+    container_name: db
+    image: postgres:14.4
+    restart: always
+    networks:
+      - otus-msa-hw9
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_DB: postgres
+      POSTGRES_PASSWORD: example
+      TZ: 'Europe/Moscow'
+
+networks:
+  otus-msa-hw9:

@@ -1,0 +1,52 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notification-service
+  namespace: otus-msa-hw9
+  labels:
+    app: notification-service
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: notification-service
+  template:
+    metadata:
+      labels:
+        app: notification-service
+    spec:
+      containers:
+        - name: notification-service
+          image: 34234247632/notification-service:v1.1
+          imagePullPolicy: IfNotPresent
+          command: ["/app/service"]
+          ports:
+            - name: http
+              containerPort: 8000
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /probe/live
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /probe/ready
+              port: http
+          envFrom:
+            - configMapRef:
+                name: notification-config
+            - secretRef:
+                name: notification-secrets
+      initContainers:
+        - name: migrate
+          image: 34234247632/notification-service:v1.1
+          imagePullPolicy: IfNotPresent
+          command: ["/entrypoint-migrate.sh"]
+          envFrom:
+            - configMapRef:
+                name: notification-config
+            - secretRef:
+                name: notification-secrets
